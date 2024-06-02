@@ -37,14 +37,15 @@ struct WhitelistedUsersResponsePayload {
 
 struct App {
 	vweb.Context
-mut:
-	db sqlite.DB
 }
 
 fn main() {
 	mut app := App{}
-	app.db = sqlite.connect(':memory:') or { panic(err) }
 	result := components.dev_database()
+	if !result {
+		println("Failed to connect to database component. ${@LOCATION}")
+		return
+    }
 
 	vweb.run<App>(app, 8080)
 }
@@ -58,22 +59,21 @@ fn (mut app App) after_request() {
 }
 
 // Handler for /check-whitelist endpoint
-['/check-whitelist'; post]
+@['/check-whitelist'; post]
 pub fn (mut app App) check_whitelist() vweb.Result {
-	mut req_payload := UserWhitelistRequestPayload{}
-	if !json.decode(req_payload, app.req.data) {
-		return app.json('{"error": "Bad request"}')
-	}
+    req_payload := json.decode(UserWhitelistRequestPayload, app.req.data) or {
+        return app.json('{"error": "Bad request"}')
+    }
 
-	whitelisted := is_whitelisted(app.db, req_payload.server_id, req_payload.identity_id) or {
-		return app.json('{"error": "Internal server error"}')
-	}
+    whitelisted := components.is_whitelisted(req_payload.server_id, req_payload.identity_id)
 
 	res_payload := UserWhitelistResponsePayload{
 		whitelisted: whitelisted
 	}
-	return app.json(json.encode(res_payload))
+
+    return app.json(json.encode(res_payload))
 }
+
 
 // TODO: Add a route/func to get all whitelisted identity Ids for that server Id.
 // ----------------------------------------------------------------------------------------------
