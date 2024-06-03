@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"log"
 	"net/http"
@@ -13,7 +12,7 @@ import (
 // WhitelistedUsers defines the structure of the rows queried when getting all whitelisted players.
 type WhitelistedRow struct {
 	gorm.Model
-	ID         int
+	ID         uint
 	ServerID   string
 	IdentityID string
 }
@@ -42,62 +41,51 @@ type WhitelistedUsersResponsePayload struct {
 	IdentityID string `json:"identity_id"`
 }
 
-var db *sql.DB
+type Database struct {
+	db *gorm.DB
+}
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("dev_database.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Connected to database successfully.")
 
-	if !createDatabase() {
-		return
-	}
+	_devDatabase(*db)
 
-	_devDatabase()
+	database := Database{db: db}
 
-	http.HandleFunc("/check-whitelist", checkWhitelistHandler)
+	http.HandleFunc("/check-whitelist", database.checkWhitelistHandler)
 	/*
-		TODO: Setup methods used by API
-		http.HandleFunc("/get-whitelisted-users", getWhitelistedIds)
+	   TODO: Setup methods used by API
+	   http.HandleFunc("/get-whitelisted-users", getWhitelistedIds)
 	*/
 	log.Println("Server is running on port 8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
-func _devDatabase() {
+// func (m *Database) databaseConnect() {
+// 	database_conn, err := gorm.Open(sqlite.Open("dev_database.db"), &gorm.Config{})
+// 	if err != nil {
+// 		log.Fatal(err)
+// 	}
+// 	m.db = database_conn
+// }
+
+func _devDatabase(db gorm.DB) {
 	devIdentityId := "465c3a56-743b-4755-bad0-2c60c625a779"
 	devServerId := "1cdfa108-0ba6-45fc-9756-22e76304e8fa"
-	devQuery := `
-	INSERT INTO users(server_id, identity_id) VALUES(?, ?)
-	`
-	_, err := db.Exec(devQuery, devServerId, devIdentityId)
-	if err != nil {
-		log.Fatal(err)
-	}
-}
 
-// createDatabase creates the database table if it does not exist.
-func createDatabase() bool {
-	createTableSQL := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-		server_id TEXT,
-		identity_id TEXT
-	);`
-
-	_, err := db.Exec(createTableSQL)
-	if err != nil {
-		log.Fatal(err)
-		return false
+	result := db.Create(&WhitelistedRow{ServerID: devServerId, IdentityID: devIdentityId})
+	if result.Error != nil {
+		log.Fatal(result.Error)
 	}
-	return true
 }
 
 // checkWhitelistHandler handles the /check-whitelist endpoint.
-func checkWhitelistHandler(w http.ResponseWriter, r *http.Request) {
+func (m *Database) checkWhitelistHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Invalid request method", http.StatusMethodNotAllowed)
 		return
@@ -110,7 +98,7 @@ func checkWhitelistHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	whitelisted, err := isWhitelisted(reqPayload.ServerID, reqPayload.IdentityID)
+	whitelisted, err := isWhitelisted(m.db, reqPayload.ServerID, reqPayload.IdentityID)
 	if err != nil {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
@@ -134,12 +122,14 @@ func checkWhitelistHandler(w http.ResponseWriter, r *http.Request) {
 // }
 
 // isWhitelisted checks if the identity ID is whitelisted under the server ID.
-func isWhitelisted(serverId, identityId string) (bool, error) {
-	var exists bool
-	query := `SELECT EXISTS(SELECT 1 FROM users WHERE server_id = ? AND identity_id = ? LIMIT 1)`
-	err := db.QueryRow(query, serverId, identityId).Scan(&exists)
-	if err != nil {
-		return false, err
+func isWhitelisted(db *gorm.DB, serverId string, identityId string) (bool, error) {
+	var whitelisted WhitelistedRow
+	result := db.Where("server_id = ? AND identity_id = ?", serverId, identityId).First(&whitelisted)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			return false, nil
+		}
+		return false, result.Error
 	}
-	return exists, nil
+	return true, nil
 }
