@@ -6,11 +6,13 @@ import (
 	"log"
 	"net/http"
 
-	_ "github.com/mattn/go-sqlite3"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
 )
 
 // WhitelistedUsers defines the structure of the rows queried when getting all whitelisted players.
 type WhitelistedRow struct {
+	gorm.Model
 	ID         int
 	ServerID   string
 	IdentityID string
@@ -43,12 +45,10 @@ type WhitelistedUsersResponsePayload struct {
 var db *sql.DB
 
 func main() {
-	var err error
-	db, err = sql.Open("sqlite3", "./dev_whitelist.db")
+	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
 	log.Println("Connected to database successfully.")
 
