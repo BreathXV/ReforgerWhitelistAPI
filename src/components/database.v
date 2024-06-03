@@ -1,6 +1,7 @@
 module components
 
 import db.sqlite
+import json
 
 @[table: 'clients']
 pub struct Client {
@@ -8,6 +9,7 @@ pub struct Client {
 	server_id		string		
 	identity_id		string		
 }
+
 
 pub const db := sqlite.connect('clients.db') or { panic(err) }
 
@@ -64,10 +66,10 @@ pub fn is_whitelisted(serverId string, identityId string) (bool) {
 }
 
 
-pub fn players_whitelisted(serverId string) string {
-	al_players := sql db {
-		select identity_id from client where server_id == serverId
-	} 
+pub fn players_whitelisted(serverId string) ?[]Client {
+    al_players := sql db {
+        select from Client where server_id == serverId
+    } or { panic(err) }
 
-	return serverId
+    return al_players
 }
