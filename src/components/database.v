@@ -18,7 +18,6 @@ fn init () {
 	} or { panic('${err} at ${@LOCATION}') }
 }
 
-
 // Inserts development data into the database for testing.
 // ### ...
 // ## Returns
@@ -62,4 +61,13 @@ pub fn is_whitelisted(serverId string, identityId string) (bool) {
 	} else {
 		return true
 	}
+}
+
+
+pub fn players_whitelisted(serverId string) string {
+	al_players := sql db {
+		select identity_id from client where server_id == serverId
+	} 
+
+	return serverId
 }

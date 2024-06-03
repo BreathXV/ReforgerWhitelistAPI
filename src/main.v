@@ -83,11 +83,3 @@ pub fn (mut app App) check_whitelist() vweb.Result {
 // 		return err
 // 	}
 // }
-
-fn is_whitelisted(db sqlite.DB, server_id string, identity_id string) ?bool {
-	query := 'SELECT EXISTS(SELECT 1 FROM users WHERE server_id = ? AND identity_id = ? LIMIT 1)'
-	exists := db.q_int(query, server_id, identity_id) or {
-		return err
-	}
-	return exists == 1
-}
