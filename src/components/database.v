@@ -1,6 +1,6 @@
 module components
 
-import db.sqlite
+import sqlite
 
 @[table: 'clients']
 pub struct Client {
