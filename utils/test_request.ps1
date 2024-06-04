@@ -1,5 +1,3 @@
-# Save this as test_request.ps1
-
 $headers = @{
   "Content-Type" = "application/json"
 }
