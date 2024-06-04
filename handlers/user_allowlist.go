@@ -33,6 +33,8 @@ type UserWhitelistResponsePayload struct {
 	Whitelisted bool `json:"whitelisted"`
 }
 
+// WhitelistedUsersRequestPayload defines the structure of the incoming
+// JSON payload for all identity Ids associated with a server Id.
 func CallToHandler(mux *http.ServeMux, db *gorm.DB) {
 	database := Database{db: db}
 	mux.HandleFunc("/check-whitelist", database.CheckWhitelistHandler)
