@@ -18,6 +18,8 @@ type client struct {
 	IdentityID string
 }
 
+// main is the entry point of the application. It initializes the database connection,
+// performs database migration and starts listening on port 8080 for incoming requests.
 func main() {
 	db, err := gorm.Open(sqlite.Open("handlers\\db\\dev_database.db"), &gorm.Config{})
 	if err != nil {
@@ -41,6 +43,7 @@ func main() {
 	log.Fatal(http.ListenAndServe("localhost:8080", mux))
 }
 
+// devDatabase adds a dev user to the database for testing purposes.
 func devDatabase(db gorm.DB) {
 	devIdentityId := "465c3a56-743b-4755-bad0-2c60c625a779"
 	devServerId := "1cdfa108-0ba6-45fc-9756-22e76304e8fa"
