@@ -52,7 +52,7 @@ func (m *Database) CheckWhitelistHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	log.Println("Received POST request to /check-whitelist from: ", reqPayload.ServerID)
+	log.Println("Received POST request to /check-whitelist from:", reqPayload.ServerID)
 
 	whitelisted, err := IsWhitelisted(m.db, reqPayload.ServerID, reqPayload.IdentityID)
 	if err != nil {

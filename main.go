@@ -19,7 +19,7 @@ type client struct {
 }
 
 func main() {
-	db, err := gorm.Open(sqlite.Open("components\\db\\dev_database.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("handlers\\db\\dev_database.db"), &gorm.Config{})
 	if err != nil {
 		log.Fatal(err)
 	}
