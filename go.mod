@@ -1,4 +1,4 @@
-module github.com/breathxv/rw-api-go
+module github.com/BreathXV/ReforgerWhitelistAPI
 
 go 1.22.3
 
