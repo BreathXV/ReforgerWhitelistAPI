@@ -1,6 +1,6 @@
 FROM golang:1.22.3 as builder
 
-WORKDIR /app
+WORKDIR /ReforgerWhitelistAPI
 
 COPY go.mod go.sum ./
 
@@ -8,13 +8,13 @@ RUN go mod tidy
 
 COPY . .
 
-RUN go build -o rwapi .
+RUN go build -o ReforgerWhitelistAPI .
 
 FROM ubuntu:latest
 
 WORKDIR /root/
 
-COPY --from=builder /app/rwapi .
+COPY --from=builder /ReforgerWhitelistAPI .
 
 COPY ./utils/test.sh .
 
