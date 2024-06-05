@@ -4,18 +4,10 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
-  build-and-test:
+  test-api-endpoint:
     runs-on: ubuntu-latest
-
-    services:
-        db:
-          image: sqlite
-          options: --health-cmd=sqlite3:memory:select 1 --health-interval=10s --health-timeout=5s --health-retries=5
 
     steps:
     - name: Checkout code
@@ -33,9 +25,6 @@ jobs:
       run: go run main.go &
       env:
         DATABASE_PATH: ":memory:"
-
-    - name: Wait for the server to start
-      run: sleep 20
 
     - name: Test endpoint /check-whitelist
       run: |
