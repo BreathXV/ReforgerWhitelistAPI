@@ -24,4 +24,4 @@ ENV DATABASE_PATH :memory:
 
 EXPOSE 8080
 
-CMD ["sh", "test.sh"]
+CMD ["sh", "./utils/test.sh"]
