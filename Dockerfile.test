@@ -11,4 +11,5 @@ COPY --from=builder /ReforgerWhitelistAPI/ReforgerWhitelistAPI .
 COPY ./utils/test.sh .
 ENV DATABASE_PATH :memory:
 EXPOSE 8080
+RUN chmod +x utils/test.sh
 CMD ["sh", "./test.sh"]
