@@ -1,4 +1,4 @@
-name: CI
+name: Lint
 
 on:
   push:
@@ -24,7 +24,11 @@ jobs:
     - name: Install dependencies
       run: go mod tidy
 
-    - name: Build and test the application in Docker
+    - name: Install and configure golangci-lint
       run: |
-        docker build -t rwapi-test -f Dockerfile.test .
-        docker run rwapi-test
+        go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
+        go install -v github.com/golangci/golangci-lint/cmd/golangci-lint
+
+    - name: Lint all .go files
+      run: |
+        golangci-lint .
