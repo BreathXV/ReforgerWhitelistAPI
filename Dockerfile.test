@@ -12,8 +12,6 @@ RUN go build -o rwapi .
 
 FROM ubuntu:latest
 
-RUN apk --no-cache add ca-certificates curl jq
-
 WORKDIR /root/
 
 COPY --from=builder /app/rwapi .
