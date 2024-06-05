@@ -27,7 +27,9 @@ func main() {
 		log.Fatal(err)
 	}
 
-	db.AutoMigrate(&client{})
+	if err := db.AutoMigrate(&client{}); err != nil {
+		log.Fatal("Failed to migrate database", err)
+	}
 
 	log.Println("Connected to database successfully.")
 
