@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   test-api-endpoint:
@@ -21,10 +24,10 @@ jobs:
     - name: Install dependencies
       run: go mod tidy
 
-    - name: Run the application
-      run: go run main.go &
-      env:
-        DATABASE_PATH: ":memory:"
+    - name: Build and run the application
+      run: |
+        docker build -t rwapi .
+        docker run -e "DATABASE_PATH=:memory:" -p 8080:8080 rwapi
 
     - name: Test endpoint /check-whitelist
       run: |
