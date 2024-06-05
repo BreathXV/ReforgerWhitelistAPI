@@ -1,15 +1,29 @@
 FROM golang:1.22.3 as builder
+
 WORKDIR /ReforgerWhitelistAPI
+
 COPY go.mod go.sum ./
+
 RUN go mod tidy
+
 COPY . .
+
 RUN go build -o ReforgerWhitelistAPI ./cmd/api
+
 FROM alpine:latest
+
 RUN apk --no-cache add ca-certificates curl jq
+
 WORKDIR /root/
+
 COPY --from=builder /ReforgerWhitelistAPI/ReforgerWhitelistAPI .
+
 COPY ./utils/test.sh .
+
 ENV DATABASE_PATH :memory:
+
 EXPOSE 8080
+
 RUN chmod +x utils/test.sh
+
 CMD ["sh", "./test.sh"]
