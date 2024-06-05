@@ -8,7 +8,7 @@ RUN go install github.com/gorm.io/gorm/...
 
 RUN go build -o main .
 
-FROM alpine:3.12 AS runner
+FROM ubuntu:latest AS runner
 
 WORKDIR /app
 
