@@ -64,7 +64,10 @@ func (m *Database) CheckWhitelistHandler(w http.ResponseWriter, r *http.Request)
 
 	resPayload := UserWhitelistResponsePayload{Whitelisted: whitelisted}
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resPayload)
+	if err := json.NewEncoder(w).Encode(resPayload); err != nil {
+		http.Error(w, "Internal server error", http.StatusInternalServerError)
+		return
+	}
 }
 
 // TODO: Add a route/func to get all whitelisted identity Ids for that server Id.
