@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+        db:
+          image: sqlite
+          options: --health-cmd=sqlite3:memory:select 1 --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.22.3
+
+    - name: Install dependencies
+      run: go mod tidy
+
+    - name: Run the application
+      run: go run main.go &
+      env:
+        DATABASE_PATH: ":memory:"
+
+    - name: Wait for the server to start
+      run: sleep 20
+
+    - name: Test endpoint /check-whitelist
+      run: |
+        response=$(curl -s -X POST http://localhost:8080/check-whitelist -H "Content-Type: application/json" -d '{"ServerID": "1cdfa108-0ba6-45fc-9756-22e76304e8fa", "IdentityID": "465c3a56-743b-4755-bad0-2c60c625a779"}')
+        echo "$response" | jq .
+        echo "$response" | jq -e '.whitelisted == "true"' > /dev/null
