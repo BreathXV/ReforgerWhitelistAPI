@@ -1,0 +1,12 @@
+linters-settings:
+  golint:
+    min-confidence: 0.8
+  gocyclo:
+    min-complexity: 10
+  errcheck:
+    ignore:
+      - 'Close()'
+run:
+  go: '1.22.3'
+  tests: true
+  timeout: 5m

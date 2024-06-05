@@ -9,7 +9,7 @@ on:
       - master
 
 jobs:
-  test-api-endpoint:
+  lint:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,14 +21,27 @@ jobs:
       with:
         go-version: 1.22.3
 
-    - name: Install dependencies
-      run: go mod tidy
-
-    - name: Install and configure golangci-lint
+    - name: Install golangci-lint
       run: |
-        go get -u github.com/golangci/golangci-lint/cmd/golangci-lint
-        go install -v github.com/golangci/golangci-lint/cmd/golangci-lint
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.51.2
 
-    - name: Lint all .go files
+    - name: Run golangci-lint
+      id: lint
       run: |
-        golangci-lint .
+        golangci-lint run --out-format json > golangci-lint-report.json
+        if [ -s golangci-lint-report.json ]; then
+          echo "Lint issues found"
+          echo "::set-output name=lint_failed::true"
+        else
+          echo "No lint issues found"
+          echo "::set-output name=lint_failed::false"
+        fi
+
+    - name: Create GitHub Issue if Lint Issues Found
+      if: steps.lint.outputs.lint_failed == 'true'
+      uses: peter-evans/create-issue-from-file@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        title: Linting Issue Found
+        content-filepath: golangci-lint-report.json
+        labels: lint
