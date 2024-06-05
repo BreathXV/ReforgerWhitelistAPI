@@ -24,13 +24,7 @@ jobs:
     - name: Install dependencies
       run: go mod tidy
 
-    - name: Build and run the application
+    - name: Build and test the application in Docker
       run: |
-        docker build -t rwapi .
-        docker run -e "DATABASE_PATH=:memory:" -p 8080:8080 rwapi
-
-    - name: Test endpoint /check-whitelist
-      run: |
-        response=$(curl -s -X POST http://localhost:8080/check-whitelist -H "Content-Type: application/json" -d '{"ServerID": "1cdfa108-0ba6-45fc-9756-22e76304e8fa", "IdentityID": "465c3a56-743b-4755-bad0-2c60c625a779"}')
-        echo "$response" | jq .
-        echo "$response" | jq -e '.whitelisted == "true"' > /dev/null
+        docker build -t rwapi-test -f Dockerfile.test .
+        docker run rwapi-test
