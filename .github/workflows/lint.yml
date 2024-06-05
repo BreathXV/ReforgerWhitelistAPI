@@ -28,7 +28,7 @@ jobs:
     - name: Run golangci-lint
       id: lint
       run: |
-        golangci-lint run --out-format json > golangci-lint-report.json
+        golangci-lint run --out-format json > golangci-lint-report.json || true
         if [ -s golangci-lint-report.json ]; then
           echo "Lint issues found"
           echo "::set-output name=lint_failed::true"
@@ -42,6 +42,6 @@ jobs:
       uses: peter-evans/create-issue-from-file@v4
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        title: Linting Issue Found
+        title: Linting Issues Found
         content-filepath: golangci-lint-report.json
         labels: lint
